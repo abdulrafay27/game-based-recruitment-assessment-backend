@@ -3,7 +3,9 @@ const { getUserByEmail, createUser } = require("../models/userModel");
 const { generateToken } = require("../utils/jwt");
 
 const register = async (req, res) => {
-  const { name, email, password } = req.body;
+  const { name, email, password, role} = req.body;
+
+  console.log("REGISTER BODY:", req.body);
 
   try {
     const existingUser = await getUserByEmail(email);
@@ -11,12 +13,14 @@ const register = async (req, res) => {
       return res.status(400).json({ message: "User already exists" });
 
     const hashedPassword = await bcrypt.hash(password, 10);
-    await createUser(name, email, hashedPassword);
+    await createUser(name, email, hashedPassword, role);
     res.status(201).json({ message: "User registered successfully" });
   } catch (err) {
     res.status(500).json({ message: "Server error", error: err.message });
   }
 };
+
+
 
 const login = async (req, res) => {
   const { email, password } = req.body;
