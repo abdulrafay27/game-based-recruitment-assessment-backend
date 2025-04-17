@@ -17,7 +17,7 @@ const createUser = async (name, email, hashedPassword) => {
     .input("email", email)
     .input("password", hashedPassword)
     .query(
-      "INSERT INTO Users (name, email, password) VALUES (@name, @email, @password)"
+      "INSERT INTO Users (full_name, email, password) VALUES (@name, @email, @password)"
     );
 };
 
