@@ -9,17 +9,31 @@ const getUserByEmail = async (email) => {
   return result.recordset[0];
 };
 
-const createUser = async (name, email, hashedPassword) => {
+// const createUser = async (name, email, hashedPassword) => {
+//   const pool = await poolPromise;
+//   await pool
+//     .request()
+//     .input("name", name)
+//     .input("email", email)
+//     .input("password", hashedPassword)
+//     .query(
+//       "INSERT INTO Users (full_name, email, password) VALUES (@name, @email, @password)"
+//     );
+// };
+
+const createUser = async (name, email, hashedPassword, role) => {
   const pool = await poolPromise;
   await pool
     .request()
     .input("name", name)
     .input("email", email)
     .input("password", hashedPassword)
+    .input("role", role)
     .query(
-      "INSERT INTO Users (full_name, email, password) VALUES (@name, @email, @password)"
+      "INSERT INTO Users (full_name, email, password, role) VALUES (@name, @email, @password, @role)"
     );
 };
+
 
 module.exports = {
   getUserByEmail,
