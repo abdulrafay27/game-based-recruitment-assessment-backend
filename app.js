@@ -1,14 +1,22 @@
-require("dotenv").config();
+require("dotenv").config(); // Load environment variables
 const express = require("express");
 const cors = require("cors");
+const routes = require("./routes"); // Import all routes
 
 const app = express();
 
-const router = require("./routes/index");
+// Middleware setup
+app.use(cors()); // Enable Cross-Origin Resource Sharing (CORS)
+app.use(express.json()); // Middleware to parse JSON request bodies
 
-app.use(express.json());
-app.use("/api", router);
-const pool = require("./config/db"); // This triggers the connection to Azure SQL
+// Routes setup
+app.use("/api", routes); // Prefix all routes with /api
 
-const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+// Initialize the database connection
+require("./config/db"); // This triggers the DB connection to Azure SQL
+
+// Start the server on a specified port
+const PORT = process.env.PORT || 5000; // Default port to 5000 if not set
+app.listen(PORT, () => {
+  console.log(`Server is running on port ${PORT}`);
+});
