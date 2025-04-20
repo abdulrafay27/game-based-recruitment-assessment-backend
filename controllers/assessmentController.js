@@ -25,12 +25,9 @@ exports.startAssessment = async (req, res) => {
   const { assessmentId } = req.body;
   try {
     const pool = await poolPromise;
-    const result = await pool
-      .request()
+    const result = await pool.request()
       .input("assessmentId", sql.Int, assessmentId)
-      .query(
-        "UPDATE Assessment SET status = 'in-progress' WHERE id = @assessmentId"
-      );
+      .query("UPDATE Assessment SET status = 'in-progress' WHERE id = @assessmentId");
 
     res.status(200).json({ message: "Assessment started successfully" });
   } catch (error) {
@@ -39,37 +36,31 @@ exports.startAssessment = async (req, res) => {
   }
 };
 
-// Submit assessment results
+// Submit assessment results (without calculating the score)
 exports.submitAssessment = async (req, res) => {
-  const { assessmentId, responses } = req.body;
+  const { assessmentId, responses, score, userId } = req.body; // Get score and userId from frontend
   try {
     const pool = await poolPromise;
 
     // Insert responses into Responses table
     for (const response of responses) {
-      await pool
-        .request()
+      await pool.request()
         .input("assessmentId", sql.Int, assessmentId)
         .input("questionId", sql.Int, response.questionId)
         .input("response", sql.NVarChar, response.answer)
-        .query(
-          "INSERT INTO Responses (assessment_id, question_id, response) VALUES (@assessmentId, @questionId, @response)"
-        );
+        .query("INSERT INTO Responses (assessment_id, question_id, response) VALUES (@assessmentId, @questionId, @response)");
     }
 
-    // Calculate score (Placeholder, you'll adjust based on your scoring system)
-    const score = Math.floor(Math.random() * 100);
-    await pool
-      .request()
+    // Set the assessment_date to the current date and update the assessment status
+    const assessmentDate = new Date().toISOString(); // Current date and time in ISO format
+    await pool.request()
       .input("assessmentId", sql.Int, assessmentId)
-      .input("score", sql.Int, score)
-      .query(
-        "UPDATE Assessment SET score = @score, status = 'completed' WHERE id = @assessmentId"
-      );
+      .input("score", sql.Int, score)  // Use score from frontend
+      .input("assessmentDate", sql.DateTime, assessmentDate)  // Insert current date
+      .input("userId", sql.Int, userId)  // Associate with user
+      .query("UPDATE Assessment SET score = @score, assessment_date = @assessmentDate, status = 'completed', user_id = @userId WHERE id = @assessmentId");
 
-    res
-      .status(200)
-      .json({ message: "Assessment submitted", result: { score } });
+    res.status(200).json({ message: "Assessment submitted successfully", result: { score } });
   } catch (error) {
     console.error("Error submitting assessment:", error);
     res.status(500).json({ message: "Server error", error: error.message });

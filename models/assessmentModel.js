@@ -4,7 +4,8 @@ const { poolPromise, sql } = require("../config/db"); // Import sql
 async function getAllAssessments() {
   try {
     const pool = await poolPromise;
-    const result = await pool.request().query("SELECT * FROM Assessments");
+
+    const result = await pool.request().query("SELECT * FROM Assessment");
     return result.recordset; // Returns an array of assessments
   } catch (error) {
     console.error("Error fetching assessments:", error);
@@ -16,11 +17,10 @@ async function getAllAssessments() {
 async function getAssessmentById(assessmentId) {
   try {
     const pool = await poolPromise;
-    const result = await pool
-      .request()
+    const result = await pool.request()
       .input("assessmentId", sql.Int, assessmentId)
-      .query("SELECT * FROM Assessments WHERE id = @assessmentId");
-
+      .query("SELECT * FROM Assessment WHERE id = @assessmentId");
+    
     return result.recordset[0]; // Returns a single assessment
   } catch (error) {
     console.error("Error fetching assessment:", error);
@@ -32,46 +32,38 @@ async function getAssessmentById(assessmentId) {
 async function startAssessment(assessmentId) {
   try {
     const pool = await poolPromise;
-    await pool
-      .request()
+    await pool.request()
       .input("assessmentId", sql.Int, assessmentId)
-      .query(
-        "UPDATE Assessments SET status = 'in-progress' WHERE id = @assessmentId"
-      );
+      .query("UPDATE Assessment SET status = 'in-progress' WHERE id = @assessmentId");
   } catch (error) {
     console.error("Error starting assessment:", error);
     throw new Error("Error starting assessment");
   }
 }
 
-// Submit an assessment and calculate the score
-async function submitAssessment(assessmentId, responses) {
+
+// Submit an assessment and update score (without calculating score here)
+async function submitAssessment(assessmentId, responses, score, userId) {
   try {
     const pool = await poolPromise;
-
+    
     // Insert responses into Responses table
     for (const response of responses) {
-      await pool
-        .request()
+      await pool.request()
         .input("assessmentId", sql.Int, assessmentId)
         .input("questionId", sql.Int, response.questionId)
         .input("response", sql.NVarChar, response.answer)
-        .query(
-          "INSERT INTO Responses (assessment_id, question_id, response) VALUES (@assessmentId, @questionId, @response)"
-        );
+        .query("INSERT INTO Responses (assessment_id, question_id, response) VALUES (@assessmentId, @questionId, @response)");
     }
-
-    // Calculate the score (using a placeholder score calculation for now)
-    const score = Math.floor(Math.random() * 100);
-
-    // Update the assessment with the calculated score and change status to completed
-    await pool
-      .request()
+    
+    // Set the assessment_date to the current date and update the assessment status
+    const assessmentDate = new Date().toISOString(); // Current date and time in ISO format
+    await pool.request()
       .input("assessmentId", sql.Int, assessmentId)
       .input("score", sql.Int, score)
-      .query(
-        "UPDATE Assessments SET score = @score, status = 'completed' WHERE id = @assessmentId"
-      );
+      .input("assessmentDate", sql.DateTime, assessmentDate)  // Insert current date
+      .input("userId", sql.Int, userId)  // Associate with user
+      .query("UPDATE Assessment SET score = @score, assessment_date = @assessmentDate, status = 'completed', user_id = @userId WHERE id = @assessmentId");
 
     return score;
   } catch (error) {
@@ -80,43 +72,9 @@ async function submitAssessment(assessmentId, responses) {
   }
 }
 
-// Get responses for a specific assessment
-async function getResponsesForAssessment(assessmentId) {
-  try {
-    const pool = await poolPromise;
-    const result = await pool
-      .request()
-      .input("assessmentId", sql.Int, assessmentId)
-      .query("SELECT * FROM Responses WHERE assessment_id = @assessmentId");
-
-    return result.recordset; // Returns an array of responses for the assessment
-  } catch (error) {
-    console.error("Error fetching responses:", error);
-    throw new Error("Error fetching responses");
-  }
-}
-
-// Example function to get all questions related to a specific module
-async function getQuestionsByModule(moduleId) {
-  try {
-    const pool = await poolPromise;
-    const result = await pool
-      .request()
-      .input("moduleId", sql.Int, moduleId)
-      .query("SELECT * FROM Questions WHERE module_id = @moduleId");
-
-    return result.recordset; // Returns an array of questions for the module
-  } catch (error) {
-    console.error("Error fetching questions:", error);
-    throw new Error("Error fetching questions");
-  }
-}
-
 module.exports = {
   getAllAssessments,
   getAssessmentById,
   startAssessment,
   submitAssessment,
-  getResponsesForAssessment,
-  getQuestionsByModule,
 };
