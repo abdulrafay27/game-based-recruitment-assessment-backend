@@ -4,6 +4,7 @@ const { poolPromise, sql } = require("../config/db"); // Import sql
 async function getAllAssessments() {
   try {
     const pool = await poolPromise;
+
     const result = await pool.request().query("SELECT * FROM Assessment");
     return result.recordset; // Returns an array of assessments
   } catch (error) {
@@ -39,6 +40,7 @@ async function startAssessment(assessmentId) {
     throw new Error("Error starting assessment");
   }
 }
+
 
 // Submit an assessment and update score (without calculating score here)
 async function submitAssessment(assessmentId, responses, score, userId) {

@@ -15,7 +15,7 @@ const config = {
 const poolPromise = new sql.ConnectionPool(config)
   .connect()
   .then((pool) => {
-    console.log(" Connected to Azure SQL Database!");
+    console.log("Connected to Azure SQL Server");
     return pool;
   })
   .catch((err) => {

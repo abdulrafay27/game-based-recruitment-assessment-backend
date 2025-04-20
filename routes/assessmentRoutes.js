@@ -2,14 +2,9 @@ const express = require("express");
 const router = express.Router();
 const assessmentController = require("../controllers/assessmentController");
 
-// ✅ Add this ping route
-router.get("/ping", (req, res) => {
-  res.json({ status: "ok" });
-});
-
-// Your existing routes
-router.get("/", assessmentController.getAssessments);
-router.post("/start", assessmentController.startAssessment);
-router.post("/submit", assessmentController.submitAssessment);
+// Correct route names
+router.get("/", assessmentController.getAssessments); // For GET /assessments
+router.post("/start", assessmentController.startAssessment); // For POST /assessments/start
+router.post("/submit", assessmentController.submitAssessment); // For POST /assessments/submit
 
 module.exports = router;
