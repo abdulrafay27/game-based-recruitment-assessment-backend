@@ -12,6 +12,9 @@ CREATE TABLE [users] (
     [updated_at] DATETIME2(7) NOT NULL DEFAULT SYSDATETIME(),
     CONSTRAINT chk_user_role CHECK ([role] IN ('candidate', 'recruiter', 'admin'))
 );
+ALTER TABLE users
+ADD CONSTRAINT DF_users_role DEFAULT 'candidate' FOR role;
+
 
 -- ===============================
 -- ASSESSMENT TABLE
