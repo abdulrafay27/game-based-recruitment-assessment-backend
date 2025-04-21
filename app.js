@@ -1,4 +1,4 @@
-require("dotenv").config();
+require("dotenv").config(); // Load environment variables
 const express = require("express");
 const cors = require("cors");
 const routes = require("./routes"); // This imports the routes from the routes directory
