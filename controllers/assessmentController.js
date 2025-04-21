@@ -31,8 +31,11 @@ exports.startAssessment = async (req, res) => {
       .query(
         "UPDATE Assessment SET status = 'in-progress' WHERE id = @assessmentId"
       );
-
-    res.status(200).json({ message: "Assessment started successfully" });
+    if (result.rowsAffected[0] > 0) {
+      res.status(200).json({ message: "Assessment started successfully" });
+    } else {
+      res.status(404).json({ message: "Assessment not found" });
+    }
   } catch (error) {
     console.error("Error starting assessment:", error);
     res.status(500).json({ message: "Server error", error: error.message });
