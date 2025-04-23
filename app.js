@@ -6,7 +6,12 @@ const routes = require("./routes"); // This imports the routes from the routes d
 const app = express();
 app.disable("x-powered-by");
 // Middleware setup
-app.use(cors()); // Enable Cross-Origin Resource Sharing (CORS)
+app.use(
+  cors({
+    origin: process.env.CLIENT_URL,
+    credentials: true,
+  })
+); // Enable Cross-Origin Resource Sharing (CORS)
 app.use(express.json()); // Middleware to parse JSON request bodies
 
 // Routes setup
