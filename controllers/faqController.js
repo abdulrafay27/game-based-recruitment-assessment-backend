@@ -1,9 +1,9 @@
-const faqModel = require("../models/faqModel"); // Import the faqModel
+const faqModel = require("../models/faqModel"); // Import the updated faqModel
 
 // Get all FAQs
 exports.getFAQs = async (req, res) => {
   try {
-    const faqs = await faqModel.getAllFAQs(); // Fetch all FAQs using the model
+    const faqs = await faqModel.find(); // Use Mongoose's find method to fetch all FAQs
 
     if (faqs.length === 0) {
       return res.status(404).json({ message: "No FAQs found" });
@@ -21,9 +21,19 @@ exports.getFAQs = async (req, res) => {
 
 // Add a new FAQ
 exports.addFAQ = async (req, res) => {
-  const { question, answer } = req.body;
+  const { id, question, answer } = req.body;
+
   try {
-    await faqModel.addFAQ(question, answer); // Add FAQ using the model
+    // Create and save the new FAQ
+    const newFAQ = new faqModel({
+      id,
+      question,
+      answer,
+      created_at: new Date(), // Set created_at to current date
+      updated_at: new Date(), // Set updated_at to current date
+    });
+
+    await newFAQ.save(); // Save the FAQ to MongoDB
 
     res.status(201).json({ message: "FAQ added successfully" });
   } catch (error) {

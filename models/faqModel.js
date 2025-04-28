@@ -1,33 +1,33 @@
-const { poolPromise, sql } = require("../config/db"); // Import the database config
+const mongoose = require("mongoose");
 
-// Get all FAQs from the database
-async function getAllFAQs() {
-  try {
-    const pool = await poolPromise;
-    const result = await pool.request().query("SELECT * FROM FAQs");
+// Define the FAQ schema based on the provided JSON schema
+const faqSchema = new mongoose.Schema({
+  id: {
+    type: Number,
+    required: true,
+    unique: true, // Ensure unique IDs
+  },
+  question: {
+    type: String,
+    required: true,
+  },
+  answer: {
+    type: String,
+    required: true,
+  },
+  created_at: {
+    type: Date,
+    required: true,
+    default: Date.now, // Automatically set the creation time
+  },
+  updated_at: {
+    type: Date,
+    required: true,
+    default: Date.now, // Automatically set the update time
+  },
+});
 
-    return result.recordset; // Returns an array of FAQs
-  } catch (error) {
-    console.error("Error fetching FAQs:", error);
-    throw new Error("Error fetching FAQs");
-  }
-}
+// Create FAQ model
+const FAQ = mongoose.model("FAQ", faqSchema);
 
-// Add a new FAQ to the database
-async function addFAQ(question, answer) {
-  try {
-    const pool = await poolPromise;
-    await pool.request()
-      .input("question", sql.NVarChar, question)
-      .input("answer", sql.NVarChar, answer)
-      .query("INSERT INTO FAQs (question, answer) VALUES (@question, @answer)");
-  } catch (error) {
-    console.error("Error adding FAQ:", error);
-    throw new Error("Error adding FAQ");
-  }
-}
-
-module.exports = {
-  getAllFAQs,
-  addFAQ
-};
+module.exports = FAQ;
