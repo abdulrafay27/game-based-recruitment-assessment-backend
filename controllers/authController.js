@@ -1,32 +1,48 @@
+const userModel = require("../models/userModel");
 const bcrypt = require("bcryptjs");
-const { getUserByEmail, createUser } = require("../models/userModel");
 const { generateToken } = require("../utils/jwt");
 
-const register = async (req, res) => {
-  const { name, email, password, role} = req.body;
+exports.register = async (req, res) => {
+  const { full_name, email, password, role } = req.body;
 
-  console.log("REGISTER BODY:", req.body);
+  if (!full_name || !email || !password || !role) {
+    return res.status(400).json({ message: "All fields are required" });
+  }
+
+  // Check if the email already exists
+  const existingUser = await userModel.findOne({ email });
+  if (existingUser) {
+    return res
+      .status(409)
+      .json({ message: "User with this email already exists" });
+  }
+
+  // Hash the password
+  const salt = await bcrypt.genSalt(10);
+  const hashedPassword = await bcrypt.hash(password, salt);
 
   try {
-    const existingUser = await getUserByEmail(email);
-    if (existingUser)
-      return res.status(400).json({ message: "User already exists" });
+    // Create and save the new User
+    const newUser = new userModel({
+      full_name,
+      email,
+      password: hashedPassword,
+      role,
+    });
+    await newUser.save(); // Save the user to MongoDB
 
-    const hashedPassword = await bcrypt.hash(password, 10);
-    await createUser(name, email, hashedPassword, role);
-    res.status(201).json({ message: "User registered successfully" });
-  } catch (err) {
-    res.status(500).json({ message: "Server error", error: err.message });
+    res.status(201).json({ message: "User Registered successfully" });
+  } catch (error) {
+    console.error("Error adding User:", error);
+    res.status(500).json({ message: "Server error", error: error.message });
   }
 };
 
-
-
-const login = async (req, res) => {
+exports.login = async (req, res) => {
   const { email, password } = req.body;
 
   try {
-    const user = await getUserByEmail(email);
+    const user = await userModel.findOne({ email });
     if (!user) return res.status(404).json({ message: "User not found" });
 
     const isMatch = await bcrypt.compare(password, user.password);
@@ -34,13 +50,8 @@ const login = async (req, res) => {
       return res.status(401).json({ message: "Invalid credentials" });
 
     const token = generateToken(user);
-    res.json({ token });
+    res.status(200).json({ token });
   } catch (err) {
     res.status(500).json({ message: "Server error", error: err.message });
   }
-};
-
-module.exports = {
-  register,
-  login,
 };
