@@ -21,16 +21,13 @@ exports.getFAQs = async (req, res) => {
 
 // Add a new FAQ
 exports.addFAQ = async (req, res) => {
-  const { id, question, answer } = req.body;
+  const { question, answer } = req.body;
 
   try {
     // Create and save the new FAQ
     const newFAQ = new faqModel({
-      id,
       question,
       answer,
-      created_at: new Date(), // Set created_at to current date
-      updated_at: new Date(), // Set updated_at to current date
     });
 
     await newFAQ.save(); // Save the FAQ to MongoDB

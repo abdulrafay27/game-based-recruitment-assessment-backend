@@ -1,31 +1,25 @@
 const mongoose = require("mongoose");
+const mongooseSequence = require("mongoose-sequence")(mongoose); // Pass mongoose to the plugin
 
-// Define the FAQ schema based on the provided JSON schema
-const faqSchema = new mongoose.Schema({
-  id: {
-    type: Number,
-    required: true,
-    unique: true, // Ensure unique IDs
+// Define the FAQ schema
+const faqSchema = new mongoose.Schema(
+  {
+    question: {
+      type: String,
+      required: true,
+    },
+    answer: {
+      type: String,
+      required: true,
+    },
   },
-  question: {
-    type: String,
-    required: true,
-  },
-  answer: {
-    type: String,
-    required: true,
-  },
-  created_at: {
-    type: Date,
-    required: true,
-    default: Date.now, // Automatically set the creation time
-  },
-  updated_at: {
-    type: Date,
-    required: true,
-    default: Date.now, // Automatically set the update time
-  },
-});
+  {
+    timestamps: true,
+  }
+);
+
+// Apply auto-increment on the 'id' field
+faqSchema.plugin(mongooseSequence, { inc_field: "faq_id" });
 
 // Create FAQ model
 const FAQ = mongoose.model("FAQ", faqSchema);
