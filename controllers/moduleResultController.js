@@ -1,4 +1,5 @@
 const ModuleResult = require("../models/moduleResultModel");
+const { updateModuleAverageTime } = require("../services/moduleService");
 
 exports.startModule = async (req, res) => {
   const { user_id, module_id } = req.body;
@@ -59,6 +60,7 @@ exports.submitModule = async (req, res) => {
       message: "Module submitted successfully",
       module_result: result,
     });
+    await updateModuleAverageTime(module_id);
   } catch (error) {
     console.error("Error submitting module:", error);
     res.status(500).json({ message: "Server error", error: error.message });
