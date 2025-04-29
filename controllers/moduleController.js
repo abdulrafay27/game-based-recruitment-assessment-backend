@@ -33,3 +33,13 @@ exports.getAllModules = async (req, res) => {
     res.status(500).json({ message: "Server error", error: error.message });
   }
 };
+
+exports.getModuleCount = async (req, res) => {
+  try {
+    const count = await Module.countDocuments();
+    res.status(200).json({ totalModules: count });
+  } catch (error) {
+    console.error("Error getting module count:", error.message);
+    res.status(500).json({ message: "Server error", error: error.message });
+  }
+};
