@@ -1,4 +1,4 @@
-const { poolPromise, sql } = require("../config/db"); // Import sql
+//const { poolPromise, sql } = require("../config/db"); // Import sql
 
 // Get all available assessments
 async function getAllAssessments() {
@@ -72,9 +72,56 @@ async function submitAssessment(assessmentId, responses, score, userId) {
   }
 }
 
+
+const { poolPromise, sql } = require("../config/db");
+
+async function getAssessmentStatusCountsByUser(userId) {
+  try {
+    const pool = await poolPromise;
+    const result = await pool.request()
+      .input("userId", sql.Int, userId)
+      .query(`
+        SELECT status, COUNT(*) AS count
+        FROM Assessment
+        WHERE user_id = @userId
+        GROUP BY status
+      `);
+
+    return result.recordset;
+  } catch (error) {
+    console.error("Error fetching assessment status counts:", error);
+    throw error;
+  }
+}
+
+// Get assessments by userId
+async function getAssessmentByUserId(userId) {
+  try {
+    const pool = await poolPromise;
+    const result = await pool.request()
+      .input("userId", sql.Int, userId)
+      .query(`
+        SELECT leadershipScore, teamworkScore, communicationScore 
+        FROM Assessment 
+        WHERE user_id = @userId
+      `);
+
+    return result.recordset[0]; // Returns scores for the given user
+  } catch (error) {
+    console.error("Error fetching user assessment:", error);
+    throw new Error("Error fetching user assessment");
+  }
+}
+
+
+
+
 module.exports = {
   getAllAssessments,
   getAssessmentById,
   startAssessment,
   submitAssessment,
+  getAssessmentStatusCountsByUser,
+  getAssessmentByUserId
 };
+
