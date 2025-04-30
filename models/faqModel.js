@@ -1,33 +1,27 @@
-const { poolPromise, sql } = require("../config/db"); // Import the database config
+const mongoose = require("mongoose");
+const mongooseSequence = require("mongoose-sequence")(mongoose); // Pass mongoose to the plugin
 
-// Get all FAQs from the database
-async function getAllFAQs() {
-  try {
-    const pool = await poolPromise;
-    const result = await pool.request().query("SELECT * FROM FAQs");
-
-    return result.recordset; // Returns an array of FAQs
-  } catch (error) {
-    console.error("Error fetching FAQs:", error);
-    throw new Error("Error fetching FAQs");
+// Define the FAQ schema
+const faqSchema = new mongoose.Schema(
+  {
+    question: {
+      type: String,
+      required: true,
+    },
+    answer: {
+      type: String,
+      required: true,
+    },
+  },
+  {
+    timestamps: true,
   }
-}
+);
 
-// Add a new FAQ to the database
-async function addFAQ(question, answer) {
-  try {
-    const pool = await poolPromise;
-    await pool.request()
-      .input("question", sql.NVarChar, question)
-      .input("answer", sql.NVarChar, answer)
-      .query("INSERT INTO FAQs (question, answer) VALUES (@question, @answer)");
-  } catch (error) {
-    console.error("Error adding FAQ:", error);
-    throw new Error("Error adding FAQ");
-  }
-}
+// Apply auto-increment on the 'id' field
+faqSchema.plugin(mongooseSequence, { inc_field: "faq_id" });
 
-module.exports = {
-  getAllFAQs,
-  addFAQ
-};
+// Create FAQ model
+const FAQ = mongoose.model("FAQ", faqSchema);
+
+module.exports = FAQ;

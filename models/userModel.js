@@ -1,41 +1,49 @@
-const { poolPromise } = require("../config/db");
+const mongoose = require("mongoose");
+const mongooseSequence = require("mongoose-sequence")(mongoose); // Pass mongoose to the plugin
 
-const getUserByEmail = async (email) => {
-  const pool = await poolPromise;
-  const result = await pool
-    .request()
-    .input("email", email)
-    .query("SELECT * FROM Users WHERE email = @email");
-  return result.recordset[0];
-};
+const userSchema = new mongoose.Schema(
+  {
+    full_name: {
+      type: String,
+      required: true,
+    },
+    email: {
+      type: String,
+      required: true,
+      unique: true,
+    },
+    password: {
+      type: String,
+      required: true,
+    },
+    phone: {
+      type: String,
+      required: false,
+    },
+    date_of_birth: {
+      type: Date,
+      required: false,
+    },
+    location: {
+      type: String,
+      required: false,
+    },
+    education: {
+      type: String,
+      required: false,
+    },
+    role: {
+      type: String,
+      required: true,
+    },
+  },
+  {
+    timestamps: true,
+  }
+);
 
-// const createUser = async (name, email, hashedPassword) => {
-//   const pool = await poolPromise;
-//   await pool
-//     .request()
-//     .input("name", name)
-//     .input("email", email)
-//     .input("password", hashedPassword)
-//     .query(
-//       "INSERT INTO Users (full_name, email, password) VALUES (@name, @email, @password)"
-//     );
-// };
+userSchema.plugin(mongooseSequence, { inc_field: "id" });
 
-const createUser = async (name, email, hashedPassword, role) => {
-  const pool = await poolPromise;
-  await pool
-    .request()
-    .input("name", name)
-    .input("email", email)
-    .input("password", hashedPassword)
-    .input("role", role)
-    .query(
-      "INSERT INTO Users (full_name, email, password, role) VALUES (@name, @email, @password, @role)"
-    );
-};
+const user = mongoose.model("user", userSchema);
 
-
-module.exports = {
-  getUserByEmail,
-  createUser,
-};
+module.exports = user;

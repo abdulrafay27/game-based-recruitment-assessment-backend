@@ -27,9 +27,14 @@ exports.startAssessment = async (req, res) => {
     const pool = await poolPromise;
     const result = await pool.request()
       .input("assessmentId", sql.Int, assessmentId)
-      .query("UPDATE Assessment SET status = 'in-progress' WHERE id = @assessmentId");
-
-    res.status(200).json({ message: "Assessment started successfully" });
+      .query(
+        "UPDATE Assessment SET status = 'in-progress' WHERE id = @assessmentId"
+      );
+    if (result.rowsAffected[0] > 0) {
+      res.status(200).json({ message: "Assessment started successfully" });
+    } else {
+      res.status(404).json({ message: "Assessment not found" });
+    }
   } catch (error) {
     console.error("Error starting assessment:", error);
     res.status(500).json({ message: "Server error", error: error.message });
