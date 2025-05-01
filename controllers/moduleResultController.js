@@ -66,3 +66,20 @@ exports.submitModule = async (req, res) => {
     res.status(500).json({ message: "Server error", error: error.message });
   }
 };
+
+exports.getCompletedCount = async (req, res) => {
+  const { user_id } = req.query;
+  if (!user_id) 
+    return res.status(400).json({ message: "user_id required" });
+  try {
+    const count = await ModuleResult.countDocuments({
+      user_id,
+      Status: "Completed"
+    });
+    res.json({ completedModules: count });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
