@@ -76,7 +76,7 @@ exports.getUserById = async (req, res) => {
   }
 };
 
-exports.getUserbyName = async (req, res) => {
+exports.getUserByName = async (req, res) => {
   const { full_name } = req.body;
   try {
     const user = await User.findOne({ full_name }).select("-password");
