@@ -20,6 +20,10 @@ const moduleSchema = new mongoose.Schema(
       type: Number,
       required: false,
     },
+    webgl_url: {  //for Unity WebGL URL
+      type: String,
+      required: true, 
+    },
   },
   {
     timestamps: true,

@@ -43,3 +43,16 @@ exports.getModuleCount = async (req, res) => {
     res.status(500).json({ message: "Server error", error: error.message });
   }
 };
+
+exports.getModuleById = async (req, res) => {
+  try {
+    const module = await Module.findById(req.params.id);
+    if (!module) {
+      return res.status(404).json({ message: 'Module not found' });
+    }
+    res.json(module);  // Include the webgl_url in the response
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
