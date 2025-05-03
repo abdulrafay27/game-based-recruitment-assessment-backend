@@ -1,4 +1,4 @@
-const userModel = require("../models/userModel");
+const User = require("../models/userModel");
 const bcrypt = require("bcryptjs");
 const { generateToken } = require("../utils/jwt");
 
@@ -10,7 +10,7 @@ exports.register = async (req, res) => {
   }
 
   // Check if the email already exists
-  const existingUser = await userModel.findOne({ email });
+  const existingUser = await User.findOne({ email });
   if (existingUser) {
     return res
       .status(409)
@@ -23,7 +23,7 @@ exports.register = async (req, res) => {
 
   try {
     // Create and save the new User
-    const newUser = new userModel({
+    const newUser = new User({
       full_name,
       email,
       password: hashedPassword,
@@ -42,7 +42,7 @@ exports.login = async (req, res) => {
   const { email, password } = req.body;
 
   try {
-    const user = await userModel.findOne({ email });
+    const user = await User.findOne({ email });
     if (!user) return res.status(404).json({ message: "User not found" });
 
     const isMatch = await bcrypt.compare(password, user.password);
@@ -50,8 +50,51 @@ exports.login = async (req, res) => {
       return res.status(401).json({ message: "Invalid credentials" });
 
     const token = generateToken(user);
-    res.status(200).json({ token });
+    res.status(200).json({ token, user: {
+      _id: user._id,
+      full_name: user.full_name,
+      email: user.email,
+      role: user.role
+    }});
   } catch (err) {
     res.status(500).json({ message: "Server error", error: err.message });
+  }
+};
+
+exports.getUserById = async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const user = await User.findOne({ id }).select("-password");
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    res.status(200).json({
+      message: "User fetched successfully",
+      user,
+    });
+  } catch (error) {
+    console.error("Error fetching user:", error);
+    res.status(500).json({ message: "Server error", error: error.message });
+  }
+};
+
+exports.getUserByName = async (req, res) => {
+  const { full_name } = req.body;
+  try {
+    const user = await User.findOne({ full_name }).select("-password");
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    res.status(200).json({
+      message: "User fetched successfully",
+      user,
+    });
+  } catch (error) {
+    console.error("Error fetching user:", error);
+    res.status(500).json({ message: "Server error", error: error.message });
   }
 };
