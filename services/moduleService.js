@@ -1,5 +1,5 @@
 const Module = require("../models/module");
-const ModuleResult = require("../models/moduleResult");
+const ModuleResult = require("../models/moduleResultModel");
 const mongoose = require("mongoose");
 
 const updateModuleAverageTime = async (moduleId) => {
