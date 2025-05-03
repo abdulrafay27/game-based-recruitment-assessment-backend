@@ -1,12 +1,13 @@
 const Module = require("../models/module");
 
 exports.addModule = async (req, res) => {
-  const { name } = req.body;
+  const { name, webgl_url } = req.body;
 
   try {
     // Create and save the new Module
     const newModule = new Module({
       name,
+      webgl_url,
     });
 
     await newModule.save(); // Save the module to mongoDB
