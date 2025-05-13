@@ -148,3 +148,22 @@ exports.getUserResults = async (req, res) => {
   }
 };
 
+// GET /api/moduleResults/all/user/:userId
+exports.getAllUserModuleResults = async (req, res) => {
+  const { userId } = req.params;
+  if (!userId) {
+    return res.status(400).json({ message: "userId is required" });
+  }
+
+  try {
+    const results = await ModuleResult.find({
+      user_id: userId
+    }).select("module_id Status");
+
+    res.json({ module_results: results });
+  } catch (err) {
+    console.error("Error fetching module results:", err);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+

@@ -4,12 +4,16 @@ const {
   addModule,
   getAllModules,
   getModuleCount,
-  getModuleById
+  getModuleById,
+  getBenchmarksByModuleId,
+  addBenchmark,
 } = require("../controllers/moduleController");
 
 router.post("/", addModule);
 router.get("/", getAllModules);
 router.get("/total-modules", getModuleCount);
 router.get("/:id", getModuleById);
+router.get("/benchmarks/:id", getBenchmarksByModuleId);
+router.post("/benchmarks", addBenchmark);
 
 module.exports = router;
