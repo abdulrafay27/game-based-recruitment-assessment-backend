@@ -50,12 +50,15 @@ exports.login = async (req, res) => {
       return res.status(401).json({ message: "Invalid credentials" });
 
     const token = generateToken(user);
-    res.status(200).json({ token, user: {
-      _id: user._id,
-      full_name: user.full_name,
-      email: user.email,
-      role: user.role
-    }});
+    res.status(200).json({
+      token,
+      user: {
+        _id: user._id,
+        full_name: user.full_name,
+        email: user.email,
+        role: user.role,
+      },
+    });
   } catch (err) {
     res.status(500).json({ message: "Server error", error: err.message });
   }
@@ -96,5 +99,17 @@ exports.getUserByName = async (req, res) => {
   } catch (error) {
     console.error("Error fetching user:", error);
     res.status(500).json({ message: "Server error", error: error.message });
+  }
+};
+
+exports.getTotalCandidates = async (req, res) => {
+  try {
+    const candidateCount = await User.countDocuments({ role: "candidate" });
+    res.status(200).json({ totalCandidates: candidateCount });
+  } catch (error) {
+    console.error("Error fetching total candidates:", error);
+    res
+      .status(500)
+      .json({ error: "Server error while fetching total candidates" });
   }
 };

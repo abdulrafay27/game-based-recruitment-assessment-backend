@@ -4,25 +4,35 @@ const { updateModuleAverageTime } = require("../services/moduleService");
 exports.startModule = async (req, res) => {
   const { user_id, module_id } = req.body;
   if (!user_id || !module_id) {
-    return res.status(400).json({ message: "user_id and module_id are required" });
+    return res
+      .status(400)
+      .json({ message: "user_id and module_id are required" });
   }
 
   try {
     // 1️⃣ Already completed?
-    const completed = await ModuleResult.findOne({ user_id, module_id, Status: "Completed" });
+    const completed = await ModuleResult.findOne({
+      user_id,
+      module_id,
+      Status: "Completed",
+    });
     if (completed) {
       return res.status(409).json({
         message: "Module already completed",
-        module_result: completed
+        module_result: completed,
       });
     }
 
     // 2️⃣ Already started?
-    let started = await ModuleResult.findOne({ user_id, module_id, Status: "Started" });
+    let started = await ModuleResult.findOne({
+      user_id,
+      module_id,
+      Status: "Started",
+    });
     if (started) {
       return res.status(200).json({
         message: "Module already started",
-        module_result: started
+        module_result: started,
       });
     }
 
@@ -115,12 +125,11 @@ exports.submitModule = async (req, res) => {
 
 exports.getCompletedCount = async (req, res) => {
   const { user_id } = req.query;
-  if (!user_id) 
-    return res.status(400).json({ message: "user_id required" });
+  if (!user_id) return res.status(400).json({ message: "user_id required" });
   try {
     const count = await ModuleResult.countDocuments({
       user_id,
-      Status: "Completed"
+      Status: "Completed",
     });
     res.json({ completedModules: count });
   } catch (err) {
@@ -139,7 +148,7 @@ exports.getUserResults = async (req, res) => {
   try {
     const results = await ModuleResult.find({
       user_id: userId,
-      Status: "Completed"
+      Status: "Completed",
     }).select("module_id ModuleScore -_id");
     res.json({ module_results: results });
   } catch (err) {
@@ -148,3 +157,65 @@ exports.getUserResults = async (req, res) => {
   }
 };
 
+// GET /api/moduleResults/all/user/:userId
+exports.getAllUserModuleResults = async (req, res) => {
+  const { userId } = req.params;
+  if (!userId) {
+    return res.status(400).json({ message: "userId is required" });
+  }
+
+  try {
+    const results = await ModuleResult.find({
+      user_id: userId,
+    }).select("module_id Status");
+
+    res.json({ module_results: results });
+  } catch (err) {
+    console.error("Error fetching module results:", err);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+exports.countAllCompletedModuleResults = async (req, res) => {
+  try {
+    const completedCount = await ModuleResult.countDocuments({
+      Status: "Completed",
+    });
+    res.status(200).json({ completedCount });
+  } catch (error) {
+    console.error("Error counting completed module results:", error);
+    res
+      .status(500)
+      .json({ error: "Server error while counting completed module results" });
+  }
+};
+
+exports.getAverageCompletionRate = async (req, res) => {
+  try {
+    const completedCount = await ModuleResult.countDocuments({
+      Status: "Completed",
+    });
+    const inProgressCount = await ModuleResult.countDocuments({
+      Status: "Started",
+    });
+
+    const totalRelevant = completedCount + inProgressCount;
+
+    let completionRate = 0;
+
+    if (totalRelevant > 0) {
+      completionRate = (completedCount / totalRelevant) * 100;
+    }
+
+    res.status(200).json({
+      completed: completedCount,
+      inProgress: inProgressCount,
+      completionRate: completionRate.toFixed(2), // rounded to 2 decimal places
+    });
+  } catch (error) {
+    console.error("Error calculating completion rate:", error);
+    res
+      .status(500)
+      .json({ error: "Server error while calculating completion rate" });
+  }
+};

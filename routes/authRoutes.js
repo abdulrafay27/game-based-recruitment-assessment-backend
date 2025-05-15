@@ -5,6 +5,7 @@ const {
   login,
   getUserById,
   getUserByName,
+  getTotalCandidates,
 } = require("../controllers/authController");
 
 // Define auth routes
@@ -12,6 +13,7 @@ router.post("/register", register);
 router.post("/login", login);
 router.get("/profile/:id", getUserById);
 router.get("/user", getUserByName);
+router.get("/dashboard", getTotalCandidates);
 
 module.exports = router;
 console.log("authRoutes.js loaded");
