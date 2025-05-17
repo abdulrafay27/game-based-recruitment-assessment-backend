@@ -1,7 +1,6 @@
 const mongoose = require("mongoose");
-const mongooseSequence = require("mongoose-sequence")(mongoose); // Pass mongoose to the plugin
+const mongooseSequence = require("mongoose-sequence")(mongoose);
 
-// Define the FAQ schema
 const faqSchema = new mongoose.Schema(
   {
     question: {
@@ -18,10 +17,8 @@ const faqSchema = new mongoose.Schema(
   }
 );
 
-// Apply auto-increment on the 'id' field
 faqSchema.plugin(mongooseSequence, { inc_field: "faq_id" });
 
-// Create FAQ model
 const FAQ = mongoose.model("FAQ", faqSchema);
 
 module.exports = FAQ;

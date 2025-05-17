@@ -1,7 +1,6 @@
 const mongoose = require("mongoose");
-const mongooseSequence = require("mongoose-sequence")(mongoose); // Pass mongoose to the plugin
+const mongooseSequence = require("mongoose-sequence")(mongoose);
 
-// Define the Module schema
 const moduleSchema = new mongoose.Schema(
   {
     name: {
@@ -30,10 +29,8 @@ const moduleSchema = new mongoose.Schema(
   }
 );
 
-// Apply auto-increment on the 'id' field
 moduleSchema.plugin(mongooseSequence, { inc_field: "module_id" });
 
-// Create Module Model
 const Module = mongoose.model("Module", moduleSchema);
 
 module.exports = Module;
