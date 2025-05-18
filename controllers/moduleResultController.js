@@ -131,7 +131,7 @@ exports.getCompletedCount = async (req, res) => {
       user_id,
       Status: "Completed",
     });
-    res.json({ completedModules: count });
+    res.json({ count });
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: "Server error" });

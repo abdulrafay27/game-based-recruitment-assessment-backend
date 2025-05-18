@@ -1,4 +1,5 @@
 const Module = require("../models/module");
+const Benchmark = require("../models/benchmark");
 
 exports.addModule = async (req, res) => {
   const { name, webgl_url } = req.body;
@@ -55,5 +56,34 @@ exports.getModuleById = async (req, res) => {
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: 'Server error' });
+  }
+};
+
+exports.getBenchmarksByModuleId = async (req, res) => {
+  try {
+    const benchmarks = await Benchmark.find({ module_id: req.params.id });
+    res.status(200).json({ benchmarks });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
+exports.addBenchmark = async (req, res) => {
+  const { module_id, min_score, max_score, description } = req.body;
+
+  try {
+    const newBenchmark = new Benchmark({
+      module_id,
+      min_score,
+      max_score,
+      description,
+    });
+
+    await newBenchmark.save();
+    res.status(201).json({ message: "Benchmark added successfully" });
+  } catch (error) {
+    console.error("Error adding Benchmark:", error);
+    res.status(500).json({ message: "Server error", error: error.message });
   }
 };

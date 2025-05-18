@@ -113,3 +113,27 @@ exports.getTotalCandidates = async (req, res) => {
       .json({ error: "Server error while fetching total candidates" });
   }
 };
+
+// controllers/authController.js
+exports.getAllCandidates = async (req, res) => {
+  try {
+    // fetch all users whose role is “candidate”
+    const candidates = await User.find({ role: "candidate" }).select("-password");
+    res.status(200).json({ candidates });
+  } catch (err) {
+    console.error("Error fetching candidates:", err);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+exports.getTotalUsers = async (req, res) => {
+  try {
+    const userCount = await User.countDocuments({ role: { $in: ["candidate", "recruiter"] } });
+    res.status(200).json({ totalUsers: userCount });
+  } catch (error) {
+    console.error("Error fetching total users:", error);
+    res
+      .status(500)
+      .json({ error: "Server error while fetching total users" });
+  }
+};
