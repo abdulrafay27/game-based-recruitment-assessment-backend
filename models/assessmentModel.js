@@ -3,6 +3,7 @@ const mongooseSequence = require("mongoose-sequence")(mongoose);
 
 const assessmentSchema = new mongoose.Schema(
   {
+    
     user_id: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
@@ -26,7 +27,18 @@ const assessmentSchema = new mongoose.Schema(
   },
   {
     timestamps: true,
-  }
+  },
+
+  { score: Number},
+  { isCompleted: Boolean },
+  { createdAt: { type: Date, default: Date.now } },
+  { moduleScores: {
+    Leadership: Number,
+    Teamwork: Number,
+    Communication: Number,
+    DecisionMaking: Number
+  }}
+ 
 );
 
 assessmentSchema.plugin(mongooseSequence, { inc_field: "assessment_id" });

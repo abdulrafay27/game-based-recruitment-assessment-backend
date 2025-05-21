@@ -3,6 +3,8 @@ const mongooseSequence = require("mongoose-sequence")(mongoose); // Pass mongoos
 
 const userSchema = new mongoose.Schema(
   {
+    name: String,
+    email: String,
     full_name: {
       type: String,
       required: true,
