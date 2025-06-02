@@ -68,7 +68,7 @@ exports.getUserById = async (req, res) => {
   const { id } = req.params;
 
   try {
-    const user = await User.findOne({ id }).select("-password");
+    const user = await User.findOne({id}).select("-password");
 
     if (!user) {
       return res.status(404).json({ message: "User not found" });
@@ -81,6 +81,46 @@ exports.getUserById = async (req, res) => {
   } catch (error) {
     console.error("Error fetching user:", error);
     res.status(500).json({ message: "Server error", error: error.message });
+  }
+};
+
+// /api/auth/getuserprofile/:userId
+exports.getUserProfile = async (req, res) => {
+  const { userId } = req.params;
+  if (!userId) {
+    return res.status(400).json({ message: "userId is required" });
+  }
+
+  try {
+    const foundUser = await User.findById(userId).select("-password");
+    if (!foundUser) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    return res.status(200).json({ user: foundUser });
+  } catch (err) {
+    console.error("Error fetching user results:", err);
+    return res.status(500).json({ message: "Server error" });
+  }
+};
+
+// /api/auth/updateprofile/:id
+exports.updateUserProfile = async (req, res) => {
+  const { id } = req.params;
+  const { full_name, phone, date_of_birth, location, education } = req.body;
+
+  try {
+    const updated = await User.findByIdAndUpdate(
+      id,
+      { full_name, phone, date_of_birth, location, education },
+      { new: true, runValidators: true, context: 'query' }
+    ).select("-password");
+    if (!updated) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    return res.status(200).json({ message: "Profile updated", user: updated });
+  } catch (err) {
+    console.error("Error updating profile:", err);
+    return res.status(500).json({ message: "Server error", error: err.message });
   }
 };
 
@@ -137,3 +177,5 @@ exports.getTotalUsers = async (req, res) => {
       .json({ error: "Server error while fetching total users" });
   }
 };
+
+

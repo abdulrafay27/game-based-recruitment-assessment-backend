@@ -8,6 +8,8 @@ const {
   getTotalCandidates,
   getAllCandidates,
   getTotalUsers,
+  getUserProfile,
+  updateUserProfile
   
 } = require("../controllers/authController");
 
@@ -19,6 +21,8 @@ router.get("/user", getUserByName);
 router.get("/dashboard", getTotalCandidates);
 router.get("/candidates", getAllCandidates);
 router.get("/usersAll", getTotalUsers);
+router.get("/getuserprofile/:userId", getUserProfile);
+router.put("/updateprofile/:id", updateUserProfile);
 
 module.exports = router;
 console.log("authRoutes.js loaded");
