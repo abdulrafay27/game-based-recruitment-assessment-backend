@@ -1,16 +1,16 @@
 // controllers/recruiterDashboardController.js
 
-const User = require("../models/userModel");                      // :contentReference[oaicite:0]{index=0}
-const Module = require("../models/module");                        // :contentReference[oaicite:1]{index=1}
-const ModuleResult = require("../models/moduleResultModel");      // :contentReference[oaicite:2]{index=2}
+const User = require("../models/userModel");                     
+const Module = require("../models/module");                        
+const ModuleResult = require("../models/moduleResultModel");      
 
 async function getDashboardSummary(req, res) {
   try {
     // 1. Total candidates (users with role "candidate")
-    const totalCandidates = await User.countDocuments({ role: "candidate" });       // :contentReference[oaicite:3]{index=3}
+    const totalCandidates = await User.countDocuments({ role: "candidate" });      
 
     // 2. Find all active modules first
-    const activeModules = await Module.find({ status: "active" }).select("_id");     // :contentReference[oaicite:4]{index=4}
+    const activeModules = await Module.find({ status: "active" }).select("_id");     
     const activeModuleIds = activeModules.map((m) => m._id);
     const numActive = activeModuleIds.length;                                       // total number of active modules
 
@@ -48,7 +48,7 @@ async function getDashboardSummary(req, res) {
       {
         $count: "usersCompletedAll", // yield { usersCompletedAll: <number> }
       },
-    ]);                                                                              // :contentReference[oaicite:5]{index=5}
+    ]);                                                                       
 
     // If aggregation returns an array with one document { usersCompletedAll: X }, extract X; otherwise zero.
     const totalAssessmentsCompleted =
@@ -61,16 +61,16 @@ async function getDashboardSummary(req, res) {
     const candidateUsers = await User.find(
       { role: "candidate" },
       { _id: 1 }
-    );                                                                            // :contentReference[oaicite:6]{index=6}
+    );                                                                          
     const candidateUserIds = candidateUsers.map((u) => u._id);
 
     const totalModuleResults = await ModuleResult.countDocuments({
       user_id: { $in: candidateUserIds },
-    });                                                                          // :contentReference[oaicite:7]{index=7}
+    });                                                                         
     const completedModuleResults = await ModuleResult.countDocuments({
       user_id: { $in: candidateUserIds },
       Status: "Completed",
-    });                                                                        // :contentReference[oaicite:8]{index=8}
+    });                                                                       
 
     const averageCompletionRate =
       totalModuleResults > 0

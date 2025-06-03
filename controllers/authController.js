@@ -171,24 +171,38 @@ exports.getTotalCandidates = async (req, res) => {
 
 exports.getAllCandidates = async (req, res) => {
   try {
-    // Get total modules dynamically
-    const totalModules = await Module.countDocuments();
+    // 1) Count only modules whose status is "active"
+    const activeModules = await Module.find({ status: "active" }).select("_id");
+    const activeModuleIds = activeModules.map((m) => m._id);
+    const totalActiveModules = activeModuleIds.length;
 
-    // Fetch all users with role "candidate"
+    // 2) Fetch all users with role "candidate"
     const candidates = await User.find({ role: "candidate" });
 
-    // Get each user's completed modules and compute status
+    // 3) For each candidate, count how many of those active modules they have completed
     const results = await Promise.all(
       candidates.map(async (candidate) => {
-        const completedCount = await ModuleResult.countDocuments({ user_id: candidate._id });
+        // Count only ModuleResults for this user where:
+        //   • module_id is in the activeModuleIds array
+        //   • Status is exactly "Completed"
+        const completedCount = await ModuleResult.countDocuments({
+          user_id: candidate._id,
+          module_id: { $in: activeModuleIds },
+          Status: "Completed",
+        });
 
+        // Determine status text:
+        //  - "Completed" if they finished every active module
+        //  - "Started"   if they finished at least one but not all
+        //  - "Not Started" if none
         let status = "Not Started";
-        if (completedCount === totalModules && totalModules !== 0) {
+        if (totalActiveModules > 0 && completedCount === totalActiveModules) {
           status = "Completed";
         } else if (completedCount > 0) {
           status = "Started";
         }
 
+        // Spread the user object and append our computed status
         return {
           ...candidate.toObject(),
           status,
@@ -196,10 +210,10 @@ exports.getAllCandidates = async (req, res) => {
       })
     );
 
-    res.status(200).json({ candidates: results });
+    return res.status(200).json({ candidates: results });
   } catch (err) {
     console.error("Error fetching candidate statuses:", err);
-    res.status(500).json({ message: "Server error" });
+    return res.status(500).json({ message: "Server error" });
   }
 };
 
