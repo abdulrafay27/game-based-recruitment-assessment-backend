@@ -6,14 +6,36 @@ const moduleSchema = new mongoose.Schema(
     name: {
       type: String,
       required: true,
+      trim: true,
+    },
+    type: {
+      type: String,
+      required: false,
+      enum: ["personality", "aptitude", "behavioral", "cognitive"],
     },
     description: {
       type: String,
+      default: "",
+      trim: true,
       required: false,
+    },
+    questions: {
+      type: Number,
+      default: 0,
+      min: 0,
     },
     average_time: {
       type: Number,
       required: false,
+    },
+    status: {
+      type: String,
+      enum: ["active", "inactive", "draft"],
+      default: "draft",
+    },
+    updated: {
+      type: Date,
+      default: Date.now,
     },
     max_score: {
       type: Number,

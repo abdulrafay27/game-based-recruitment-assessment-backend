@@ -55,36 +55,7 @@ exports.startModule = async (req, res) => {
   }
 };
 
-/*
-exports.startModule = async (req, res) => {
-  const { user_id, module_id } = req.body;
 
-  if (!user_id || !module_id) {
-    return res
-      .status(400)
-      .json({ message: "user_id and module_id are required" });
-  }
-
-  try {
-    const newModuleResult = new ModuleResult({
-      user_id,
-      module_id,
-      Status: "Started",
-      start_time: new Date(),
-    });
-
-    await newModuleResult.save();
-
-    res.status(201).json({
-      message: "Module started successfully",
-      module_result: newModuleResult,
-    });
-  } catch (error) {
-    console.error("Error starting module:", error);
-    res.status(500).json({ message: "Server error", error: error.message });
-  }
-}; 
-*/
 
 exports.submitModule = async (req, res) => {
   const { user_id, module_id, ModuleScore } = req.body;
