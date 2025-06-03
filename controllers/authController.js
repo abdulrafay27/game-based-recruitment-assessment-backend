@@ -250,4 +250,3 @@ exports.getTotalUsers = async (req, res) => {
   }
 };
 
-
