@@ -18,4 +18,7 @@ router.get(
   "/dashboard/completion-rate",
   moduleResultsController.getAverageCompletionRate
 );
+
+router.get("/insights/:userId", moduleResultsController.getUserAssessmentInsights);
+
 module.exports = router;
