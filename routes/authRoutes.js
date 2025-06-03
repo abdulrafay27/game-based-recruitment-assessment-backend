@@ -24,6 +24,7 @@ router.get("/usersAll", getTotalUsers);
 router.get("/getuserprofile/:userId", getUserProfile);
 router.put("/updateprofile/:id", updateUserProfile);
 
+
 module.exports = router;
 console.log("authRoutes.js loaded");
 

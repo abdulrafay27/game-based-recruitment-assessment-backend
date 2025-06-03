@@ -1,6 +1,9 @@
 const User = require("../models/userModel");
 const bcrypt = require("bcryptjs");
 const { generateToken } = require("../utils/jwt");
+const Assessment = require("../models/assessmentModel"); 
+const Module = require("../models/module");
+const ModuleResult = require("../models/moduleResultModel");
 
 exports.register = async (req, res) => {
   const { full_name, email, password, role } = req.body;
@@ -154,14 +157,48 @@ exports.getTotalCandidates = async (req, res) => {
   }
 };
 
-// controllers/authController.js
+// // controllers/authController.js
+// exports.getAllCandidates = async (req, res) => {
+//   try {
+//     // fetch all users whose role is “candidate”
+//     const candidates = await User.find({ role: "candidate" }).select("-password");
+//     res.status(200).json({ candidates });
+//   } catch (err) {
+//     console.error("Error fetching candidates:", err);
+//     res.status(500).json({ message: "Server error" });
+//   }
+// };
+
 exports.getAllCandidates = async (req, res) => {
   try {
-    // fetch all users whose role is “candidate”
-    const candidates = await User.find({ role: "candidate" }).select("-password");
-    res.status(200).json({ candidates });
+    // Get total modules dynamically
+    const totalModules = await Module.countDocuments();
+
+    // Fetch all users with role "candidate"
+    const candidates = await User.find({ role: "candidate" });
+
+    // Get each user's completed modules and compute status
+    const results = await Promise.all(
+      candidates.map(async (candidate) => {
+        const completedCount = await ModuleResult.countDocuments({ user_id: candidate._id });
+
+        let status = "Not Started";
+        if (completedCount === totalModules && totalModules !== 0) {
+          status = "Completed";
+        } else if (completedCount > 0) {
+          status = "Started";
+        }
+
+        return {
+          ...candidate.toObject(),
+          status,
+        };
+      })
+    );
+
+    res.status(200).json({ candidates: results });
   } catch (err) {
-    console.error("Error fetching candidates:", err);
+    console.error("Error fetching candidate statuses:", err);
     res.status(500).json({ message: "Server error" });
   }
 };
