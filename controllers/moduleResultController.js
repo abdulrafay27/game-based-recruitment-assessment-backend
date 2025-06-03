@@ -1,5 +1,60 @@
 const ModuleResult = require("../models/moduleResultModel");
 const { updateModuleAverageTime } = require("../services/moduleService");
+const Benchmark = require("../models/benchmark"); 
+const User = require("../models/userModel");
+
+exports.getUserAssessmentInsights = async (req, res) => {
+  const { userId } = req.params;
+
+  if (!userId) {
+    return res.status(400).json({ message: "userId is required" });
+  }
+
+  try {
+    // Get all completed module results for the user
+    const results = await ModuleResult.find({
+      user_id: userId,
+      Status: "Completed",
+    }).lean();
+
+    // Extract unique module_ids
+    const moduleIds = [...new Set(results.map(r => r.module_id.toString()))];
+
+    // Fetch all benchmarks for these modules
+    const benchmarks = await Benchmark.find({
+      module_id: { $in: moduleIds }
+    }).lean();
+
+    // Map insights by matching benchmarks with results
+    const insights = results.map(result => {
+      const benchmark = benchmarks.find(b =>
+        b.module_id.toString() === result.module_id.toString() &&
+        b.min_score <= result.ModuleScore &&
+        b.max_score >= result.ModuleScore
+      );
+
+      if (benchmark) {
+        return {
+          module_id: result.module_id,
+          ModuleScore: result.ModuleScore,
+          Benchmark: {
+            description: benchmark.description,
+            keyStrengths: benchmark.keyStrengths,
+            potentialChallenges: benchmark.potentialChallenges,
+            developmentRecommendations: benchmark.developmentRecommendations,
+            careerRecommendations: benchmark.careerRecommendations,
+          },
+        };
+      }
+      return null;
+    }).filter(Boolean);
+
+    res.status(200).json({ insights });
+  } catch (error) {
+    console.error("Error fetching user assessment insights:", error);
+    res.status(500).json({ message: "Server error", error: error.message });
+  }
+};
 
 exports.startModule = async (req, res) => {
   const { user_id, module_id } = req.body;

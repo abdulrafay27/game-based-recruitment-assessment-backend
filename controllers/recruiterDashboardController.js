@@ -89,4 +89,97 @@ async function getDashboardSummary(req, res) {
   }
 }
 
-module.exports = { getDashboardSummary };
+// Get top candidates and their scores across completed modules
+async function getTopCandidates(req, res) {
+  try {
+    // Find all candidate users with basic info
+    const candidateUsers = await User.find({ role: "candidate" }).select("_id name email");
+    const candidateUserIds = candidateUsers.map(u => u._id);
+
+    // Aggregate average ModuleScore per candidate for completed modules
+    const agg = await ModuleResult.aggregate([
+      {
+        $match: {
+          user_id: { $in: candidateUserIds },
+          Status: "Completed",
+          ModuleScore: { $exists: true }
+        }
+      },
+      {
+        $group: {
+          _id: "$user_id",
+          averageScore: { $avg: "$ModuleScore" },
+          totalModulesCompleted: { $sum: 1 }
+        }
+      },
+      {
+        $sort: { averageScore: -1 } // Highest average score first
+      },
+      {
+        $limit: 10 // Top 10 candidates; you can adjust or make dynamic
+      }
+    ]);
+
+    // Merge aggregated data with user info
+    const topCandidates = agg.map(item => {
+      const user = candidateUsers.find(u => u._id.equals(item._id));
+      return {
+        user_id: item._id,
+        name: user ? user.name : "Unknown",
+        email: user ? user.email : "Unknown",
+        averageScore: item.averageScore.toFixed(2),
+        totalModulesCompleted: item.totalModulesCompleted
+      };
+    });
+
+    res.status(200).json({ topCandidates });
+  } catch (err) {
+    console.error("Error in getTopCandidates:", err);
+    res.status(500).json({ error: "Server error" });
+  }
+}
+
+async function getAllCandidateResults(req, res) {
+  try {
+    // Find all candidates
+    const candidates = await User.find({ role: "candidate" }).select("_id name email");
+
+    const candidateUserIds = candidates.map(c => c._id);
+
+    // Find all completed ModuleResults for these users, including module scores
+    const results = await ModuleResult.find({
+      user_id: { $in: candidateUserIds },
+      Status: "Completed"
+    }).select("user_id module_id ModuleScore").lean();
+
+    // Group results by user_id for easier consumption
+    const groupedResults = {};
+    for (const r of results) {
+      if (!groupedResults[r.user_id]) groupedResults[r.user_id] = [];
+      groupedResults[r.user_id].push({
+        module_id: r.module_id,
+        ModuleScore: r.ModuleScore
+      });
+    }
+
+    // Attach user info
+    const allCandidateResults = candidates.map(c => ({
+      user_id: c._id,
+      name: c.name,
+      email: c.email,
+      modules: groupedResults[c._id] || []
+    }));
+
+    res.status(200).json({ allCandidateResults });
+  } catch (error) {
+    console.error("Error in getAllCandidateResults:", error);
+    res.status(500).json({ error: "Server error" });
+  }
+}
+
+module.exports = { 
+  getDashboardSummary,
+  getTopCandidates,
+  getAllCandidateResults,
+};
+
