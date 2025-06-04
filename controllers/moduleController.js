@@ -8,7 +8,7 @@ exports.addModule = async (req, res) => {
     name,
     type,
     description,
-    questions,
+    max_score,
     timeLimit,
     status,
     webgl_url,

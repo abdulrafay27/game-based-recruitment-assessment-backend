@@ -1,5 +1,5 @@
 const ModuleResult = require("../models/moduleResultModel");
-const { updateModuleAverageTime } = require("../services/moduleService");
+//const { updateModuleAverageTime } = require("../services/moduleService");
 const Benchmark = require("../models/benchmark"); 
 const User = require("../models/userModel");
 const Module = require("../models/module");
