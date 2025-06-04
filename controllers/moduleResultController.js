@@ -2,6 +2,8 @@ const ModuleResult = require("../models/moduleResultModel");
 const { updateModuleAverageTime } = require("../services/moduleService");
 const Benchmark = require("../models/benchmark"); 
 const User = require("../models/userModel");
+const Module = require("../models/module");
+
 
 exports.getUserAssessmentInsights = async (req, res) => {
   const { userId } = req.params;
@@ -149,7 +151,7 @@ exports.submitModule = async (req, res) => {
   }
 };
 
-exports.getCompletedCount = async (req, res) => {
+exports.getCompletedCountBar = async (req, res) => {
   const { user_id } = req.query;
   if (!user_id) return res.status(400).json({ message: "user_id required" });
   try {
@@ -161,6 +163,33 @@ exports.getCompletedCount = async (req, res) => {
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: "Server error" });
+  }
+};
+
+// GET /api/moduleResult/completed-count?user_id=XXX
+exports.getCompletedCount = async (req, res) => {
+  const { user_id } = req.query;
+  if (!user_id) {
+    return res.status(400).json({ message: "user_id is required" });
+  }
+
+  try {
+    // 1) find IDs of all active modules
+    const activeModuleIds = await Module.find({ status: "active" }).distinct("_id");
+
+    // 2) count how many ModuleResults for this user where:
+    //    • module_id in activeModuleIds
+    //    • Status === "Completed"
+    const completedCount = await ModuleResult.countDocuments({
+      user_id,
+      module_id: { $in: activeModuleIds },
+      Status: "Completed",
+    });
+
+    return res.status(200).json({ completedModules: completedCount });
+  } catch (err) {
+    console.error("Error in getCompletedCount:", err);
+    return res.status(500).json({ message: "Server error" });
   }
 };
 
