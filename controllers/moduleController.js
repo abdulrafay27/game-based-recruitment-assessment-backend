@@ -3,13 +3,15 @@ const Benchmark = require("../models/benchmark");
 
 // Create a new module
 // POST /api/modules
+   
+   
 exports.addModule = async (req, res) => {
   const {
     name,
     type,
     description,
     max_score,
-    timeLimit,
+    average_time,
     status,
     webgl_url,
   } = req.body;
@@ -23,8 +25,8 @@ exports.addModule = async (req, res) => {
       name,
       type,
       description: description || "",
-      questions: questions || 0,
-      average_time: timeLimit || 0,
+      max_score: max_score || 0,
+      average_time: average_time || 0,
       status: status || "draft",
       webgl_url: webgl_url || "",
       updated: Date.now(),
@@ -115,8 +117,9 @@ exports.updateModule = async (req, res) => {
     name,
     type,
     description,
+    max_score,
     questions,
-    timeLimit,
+    average_time,
     status,
     webgl_url,
   } = req.body;
@@ -132,7 +135,8 @@ exports.updateModule = async (req, res) => {
     if (type !== undefined) moduleToUpdate.type = type;
     if (description !== undefined) moduleToUpdate.description = description;
     if (questions !== undefined) moduleToUpdate.questions = questions;
-    if (timeLimit !== undefined) moduleToUpdate.timeLimit = timeLimit;
+    if (average_time !== undefined) moduleToUpdate.average_time = average_time;
+    if (max_score !== undefined) moduleToUpdate.max_score = max_score;
     if (status !== undefined) moduleToUpdate.status = status;
     if (webgl_url !== undefined) moduleToUpdate.webgl_url = webgl_url;
 
